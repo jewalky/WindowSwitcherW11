@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.7.34003.232
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WindowSwitchW11", "WindowSwitchW11\WindowSwitchW11.csproj", "{C54608AA-677C-4FD5-8A10-F2B86992DD7A}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{C54608AA-677C-4FD5-8A10-F2B86992DD7A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C54608AA-677C-4FD5-8A10-F2B86992DD7A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C54608AA-677C-4FD5-8A10-F2B86992DD7A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C54608AA-677C-4FD5-8A10-F2B86992DD7A}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {EA5012D4-6E33-4042-A9E7-D70FB5AD7DAC}
+	EndGlobalSection
+EndGlobal
