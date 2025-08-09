@@ -252,7 +252,7 @@ namespace WindowSwitchW11
                     images.Add(icon.Image);
             }
             // position and resize
-            Size = new Size(padding * 2 + maxIconsOnRow * itemSize + 12, padding * 2 + maxRows * itemSize + 48);
+            Size = new Size(padding * 2 + maxIconsOnRow * itemSize + 12, padding * 2 + maxRows * itemSize + 54);
 
             Point mousePos = Cursor.Position;
             Screen cursorScreen = Screen.FromPoint(mousePos);

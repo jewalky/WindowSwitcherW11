@@ -30,7 +30,7 @@
         {
             label1 = new Label();
             panel1 = new Panel();
-            panel2 = new Panel();
+            panel2 = new RaisedPanel();
             panel3 = new Panel();
             panel3.SuspendLayout();
             SuspendLayout();
@@ -39,10 +39,9 @@
             // 
             label1.Anchor = AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             label1.AutoSize = true;
-            label1.Font = new Font("Segoe UI", 9F, FontStyle.Bold, GraphicsUnit.Point);
-            label1.Location = new Point(3, 6);
+            label1.Location = new Point(0, 6);
             label1.Name = "label1";
-            label1.Size = new Size(40, 15);
+            label1.Size = new Size(38, 15);
             label1.TabIndex = 1;
             label1.Text = "label1";
             // 
@@ -56,7 +55,6 @@
             // 
             // panel2
             // 
-            panel2.BorderStyle = BorderStyle.FixedSingle;
             panel2.Dock = DockStyle.Fill;
             panel2.Location = new Point(0, 0);
             panel2.Name = "panel2";
@@ -93,7 +91,7 @@
         #endregion
         private Label label1;
         private Panel panel1;
-        private Panel panel2;
+        private RaisedPanel panel2;
         private Panel panel3;
     }
 }
