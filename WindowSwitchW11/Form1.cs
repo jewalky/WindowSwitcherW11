@@ -179,16 +179,16 @@ namespace WindowSwitchW11
             }
             // for now, do very simple approach
             lastWindowInfo = WindowEnumerator.GetOpenWindows();
-            foreach (var control in windowsOnForm)
-                control.Dispose();
             foreach (var image in images)
                 image.Dispose();
+            foreach (var control in windowsOnForm)
+                control.Dispose();
             windowsOnForm.Clear();
             if (lastWindowInfo.Count == 0)
                 return false;
             int iconSize = 32;
             int maxIconsOnRow = 8;
-            int padding = 8;
+            int padding = 6;
             int itemSize = iconSize + padding * 2;
             int y = 0;
             int x = 0;
@@ -252,7 +252,7 @@ namespace WindowSwitchW11
                     images.Add(icon.Image);
             }
             // position and resize
-            Size = new Size(padding * 2 + maxIconsOnRow * itemSize + 8, padding * 2 + maxRows * itemSize + 48);
+            Size = new Size(padding * 2 + maxIconsOnRow * itemSize + 12, padding * 2 + maxRows * itemSize + 48);
 
             Point mousePos = Cursor.Position;
             Screen cursorScreen = Screen.FromPoint(mousePos);

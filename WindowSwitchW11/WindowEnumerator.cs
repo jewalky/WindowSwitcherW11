@@ -72,8 +72,7 @@ public static class WindowEnumerator
                 if (iconHandle == IntPtr.Zero)
                 {
                     // Fallback: Get from process executable
-                    GetWindowThreadProcessId(hWnd, out uint otherPid);
-                    Process proc = Process.GetProcessById((int)otherPid);
+                    Process proc = Process.GetProcessById((int)pid);
                     if (proc.MainModule?.FileName != null && !string.IsNullOrEmpty(proc.MainModule.FileName))
                     {
                         icon = Icon.ExtractAssociatedIcon(proc.MainModule.FileName);
