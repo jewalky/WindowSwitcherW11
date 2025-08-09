@@ -6,3 +6,4 @@ Note: might not be good for reuse, since parts of the code are written by AI (sp
 
 Preview:
 
+https://github.com/user-attachments/assets/73b6c7a6-08f2-4ba5-9e32-0e91c15784d6
