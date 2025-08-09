@@ -32,6 +32,11 @@ public class KeyboardHook : IDisposable
         _hookID = SetHook(_proc);
     }
 
+    public void CancelHook()
+    {
+        _hookEnabled = false;
+    }
+
     public void Dispose()
     {
         UnhookWindowsHookEx(_hookID);

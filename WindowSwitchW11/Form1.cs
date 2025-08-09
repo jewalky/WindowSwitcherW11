@@ -47,6 +47,7 @@ namespace WindowSwitchW11
         KeyboardHook hook;
         private List<WindowLabel> windowsOnForm = new List<WindowLabel>();
         private List<WindowInfo> lastWindowInfo;
+        private List<Image> images = new List<Image>();
 
         public Form1()
         {
@@ -78,7 +79,11 @@ namespace WindowSwitchW11
         {
             if (!Visible)
             {
-                SetupWindowList();
+                if (!SetupWindowList())
+                {
+                    hook.CancelHook();
+                    return;
+                }
 
                 base.SetVisibleCore(true);
 
@@ -163,13 +168,24 @@ namespace WindowSwitchW11
             base.SetVisibleCore(false);
         }
 
-        private void SetupWindowList()
+        private bool SetupWindowList()
         {
+            if (lastWindowInfo != null)
+            {
+                foreach (var info in lastWindowInfo)
+                {
+                    info.Icon?.Dispose();
+                }
+            }
             // for now, do very simple approach
             lastWindowInfo = WindowEnumerator.GetOpenWindows();
             foreach (var control in windowsOnForm)
                 control.Dispose();
+            foreach (var image in images)
+                image.Dispose();
             windowsOnForm.Clear();
+            if (lastWindowInfo.Count == 0)
+                return false;
             int iconSize = 32;
             int maxIconsOnRow = 8;
             int padding = 8;
@@ -232,6 +248,8 @@ namespace WindowSwitchW11
                 }
                 panel1.Controls.Add(windowVisual);
                 windowsOnForm.Add(windowVisual);
+                if (icon.Image != null)
+                    images.Add(icon.Image);
             }
             // position and resize
             Size = new Size(padding * 2 + maxIconsOnRow * itemSize + 8, padding * 2 + maxRows * itemSize + 48);
@@ -244,6 +262,7 @@ namespace WindowSwitchW11
             this.Location = new Point(centerX, centerY);
 
             label1.Text = lastWindowInfo[initialSelectedWindow].Title;
+            return true;
         }
     }
 }
