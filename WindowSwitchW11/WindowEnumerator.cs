@@ -45,42 +45,50 @@ public static class WindowEnumerator
         uint currentProcessId = (uint)Process.GetCurrentProcess().Id;
         EnumWindows(delegate (IntPtr hWnd, IntPtr param)
         {
-            if (IsWindowVisible(hWnd))
+            try
             {
-                // Check if cloaked (hidden from user view, e.g., background UWP windows)
-                int cloaked = 0;
-                DwmGetWindowAttribute(hWnd, DWMWA_CLOAKED, out cloaked, sizeof(int));
-                if (cloaked != 0)
-                    return true; // Skip cloaked windows
-                StringBuilder className = new StringBuilder(256);
-                GetClassName(hWnd, className, className.Capacity);
-                if (className.ToString() == "Progman")
-                    return true; // Skip Program Manager (desktop) window
-                GetWindowThreadProcessId(hWnd, out uint pid);
-                if (pid == currentProcessId)
-                    return true; // Skip windows from the current process
-                StringBuilder title = new StringBuilder(256);
-                GetWindowText(hWnd, title, title.Capacity);
-                if (title.Length == 0)
-                    return true;
-                // Get icon
-                Icon icon = null;
-                IntPtr iconHandle = SendMessage(hWnd, WM_GETICON, ICON_BIG, 0);
-                if (iconHandle == IntPtr.Zero)
+                if (IsWindowVisible(hWnd))
                 {
-                    // Fallback: Get from process executable
-                    Process proc = Process.GetProcessById((int)pid);
-                    if (proc.MainModule?.FileName != null && !string.IsNullOrEmpty(proc.MainModule.FileName))
+                    // Check if cloaked (hidden from user view, e.g., background UWP windows)
+                    int cloaked = 0;
+                    DwmGetWindowAttribute(hWnd, DWMWA_CLOAKED, out cloaked, sizeof(int));
+                    if (cloaked != 0)
+                        return true; // Skip cloaked windows
+                    StringBuilder className = new StringBuilder(256);
+                    GetClassName(hWnd, className, className.Capacity);
+                    if (className.ToString() == "Progman")
+                        return true; // Skip Program Manager (desktop) window
+                    GetWindowThreadProcessId(hWnd, out uint pid);
+                    if (pid == currentProcessId)
+                        return true; // Skip windows from the current process
+                    StringBuilder title = new StringBuilder(256);
+                    GetWindowText(hWnd, title, title.Capacity);
+                    if (title.Length == 0)
+                        return true;
+                    // Get icon
+                    Icon icon = null;
+                    IntPtr iconHandle = SendMessage(hWnd, WM_GETICON, ICON_BIG, 0);
+                    if (iconHandle == IntPtr.Zero)
                     {
-                        icon = Icon.ExtractAssociatedIcon(proc.MainModule.FileName);
+                        // Fallback: Get from process executable
+                        Process proc = Process.GetProcessById((int)pid);
+                        if (proc.MainModule?.FileName != null && !string.IsNullOrEmpty(proc.MainModule.FileName))
+                        {
+                            icon = Icon.ExtractAssociatedIcon(proc.MainModule.FileName);
+                        }
                     }
-                }
-                else
-                {
-                    icon = Icon.FromHandle(iconHandle);
-                }
+                    else
+                    {
+                        icon = Icon.FromHandle(iconHandle);
+                    }
 
-                windows.Add(new WindowInfo { Handle = hWnd, Title = title.ToString(), Icon = icon });
+                    windows.Add(new WindowInfo { Handle = hWnd, Title = title.ToString(), Icon = icon });
+                }
+            }
+            catch (Exception ex)
+            {
+                // Noop. Most of the time this is an access error, if not running as admin or something "even stronger than admin" can't be scanned.
+                // Ignore such windows.
             }
             return true;
         }, IntPtr.Zero);
