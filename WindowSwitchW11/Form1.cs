@@ -55,6 +55,7 @@ namespace WindowSwitchW11
             ShowInTaskbar = false;
             hook = new KeyboardHook();
             hook.AltTabPressed += OnAltTabPressed;
+            hook.EscapePressed += OnEscapePressed;
             hook.AltReleased += OnAltReleased;
         }
 
@@ -139,6 +140,13 @@ namespace WindowSwitchW11
                 SetForegroundWindow(hWnd);
                 ShowWindow(hWnd, IsIconic(hWnd) ? SW_RESTORE : SW_SHOW);
             }
+        }
+
+        private void OnEscapePressed(object sender, EventArgs args)
+        {
+            // restore control to the window #1, which is always the currently focused window
+            ForceForegroundWindow(lastWindowInfo[0].Handle);
+            base.SetVisibleCore(false);
         }
 
         private void OnAltReleased(object sender, EventArgs args)

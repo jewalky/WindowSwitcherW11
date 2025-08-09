@@ -21,6 +21,7 @@ public class KeyboardHook : IDisposable
     }
 
     public event EventHandler<AltTabPressedEventArgs> AltTabPressed;
+    public event EventHandler<EventArgs> EscapePressed;
     public event EventHandler AltReleased;
 
     private bool _hookEnabled = false;
@@ -66,6 +67,12 @@ public class KeyboardHook : IDisposable
                     AltTabPressed?.Invoke(this, args);
                     _hookEnabled = true;
                     return (IntPtr)1; // Consume the message to prevent system handling
+                }
+                else if (_hookEnabled && key == Keys.Escape)
+                {
+                    EscapePressed?.Invoke(this, EventArgs.Empty);
+                    _hookEnabled = false;
+                    return (IntPtr)1;
                 }
             }
             else if (wParam == (IntPtr)WM_KEYUP || wParam == (IntPtr)WM_SYSKEYUP)
