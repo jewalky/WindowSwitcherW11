@@ -40,7 +40,7 @@
             label1.Anchor = AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             label1.AutoSize = true;
             label1.Font = new Font("Segoe UI", 9F, FontStyle.Bold, GraphicsUnit.Point);
-            label1.Location = new Point(7, 6);
+            label1.Location = new Point(3, 6);
             label1.Name = "label1";
             label1.Size = new Size(40, 15);
             label1.TabIndex = 1;
