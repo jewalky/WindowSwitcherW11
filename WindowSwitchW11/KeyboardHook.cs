@@ -66,14 +66,22 @@ public class KeyboardHook : IDisposable
                     {
                         ShiftPressed = (Control.ModifierKeys & Keys.Shift) != 0
                     };
-                    AltTabPressed?.Invoke(this, args);
                     _hookEnabled = true;
+                    AltTabPressed?.Invoke(this, args);
                     return (IntPtr)1; // Consume the message to prevent system handling
                 }
                 else if (_hookEnabled && key == Keys.Escape)
                 {
-                    EscapePressed?.Invoke(this, EventArgs.Empty);
                     _hookEnabled = false;
+                    EscapePressed?.Invoke(this, EventArgs.Empty);
+                    return (IntPtr)1;
+                }
+                else if (_hookEnabled && (key == Keys.Menu || key == Keys.LMenu || key == Keys.RMenu || vkCode == 0x12))
+                {
+                    // this basically means you were in alt-tab and pressed alt again (right alt or smth)
+                    // just cancel in this case. because otherwise releasing ANY of the alts will result in broken behavior
+                    _hookEnabled = false;
+                    EscapePressed?.Invoke(this, EventArgs.Empty);
                     return (IntPtr)1;
                 }
             }
@@ -81,8 +89,8 @@ public class KeyboardHook : IDisposable
             {
                 if (_hookEnabled && (key == Keys.Menu || key == Keys.LMenu || key == Keys.RMenu || vkCode == 0x12)) // Alt keys (VK_MENU = 0x12)
                 {
-                    AltReleased?.Invoke(this, EventArgs.Empty);
                     _hookEnabled = false;
+                    AltReleased?.Invoke(this, EventArgs.Empty);
                     // NEVER consume the alt release, because we also don't consume alt press.
                     return CallNextHookEx(_hookID, nCode, wParam, lParam);
                 }

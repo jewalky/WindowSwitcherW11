@@ -218,7 +218,7 @@ namespace WindowSwitchW11
                     using (Bitmap original = window.Icon.ToBitmap())
                     {
                         Bitmap imageToUse;
-                        if (original.Width < iconSize || original.Height < iconSize)
+                        if (original.Width != iconSize || original.Height != iconSize)
                         {
                             imageToUse = new Bitmap(iconSize, iconSize);
                             using (Graphics g = Graphics.FromImage(imageToUse))
