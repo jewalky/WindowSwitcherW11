@@ -238,7 +238,7 @@ namespace WindowSwitchW11
             }
             else if (nextRow >= currentRow + MAX_ROWS)
             {
-                scroll = (nextRow - 1) * MAX_COLUMNS;
+                scroll = (nextRow - (MAX_ROWS-1)) * MAX_COLUMNS;
             }
             else
             {
