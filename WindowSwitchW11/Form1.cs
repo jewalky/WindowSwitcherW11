@@ -181,6 +181,7 @@ namespace WindowSwitchW11
             lastWindowInfo = WindowEnumerator.GetOpenWindows();
             foreach (var image in images)
                 image.Dispose();
+            images.Clear();
             foreach (var control in windowsOnForm)
                 control.Dispose();
             windowsOnForm.Clear();

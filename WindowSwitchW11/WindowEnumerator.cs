@@ -56,8 +56,9 @@ public static class WindowEnumerator
                         return true; // Skip cloaked windows
                     StringBuilder className = new StringBuilder(256);
                     GetClassName(hWnd, className, className.Capacity);
-                    if (className.ToString() == "Progman")
-                        return true; // Skip Program Manager (desktop) window
+                    string classNameStr = className.ToString();
+                    if (classNameStr == "Progman" || classNameStr == "SysDragImage")
+                        return true; // skip special explorer windows
                     GetWindowThreadProcessId(hWnd, out uint pid);
                     if (pid == currentProcessId)
                         return true; // Skip windows from the current process
