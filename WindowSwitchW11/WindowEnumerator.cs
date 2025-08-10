@@ -57,7 +57,7 @@ public static class WindowEnumerator
                     StringBuilder className = new StringBuilder(256);
                     GetClassName(hWnd, className, className.Capacity);
                     string classNameStr = className.ToString();
-                    if (classNameStr == "Progman" || classNameStr == "SysDragImage")
+                    if (classNameStr == "Progman" || classNameStr == "SysDragImage" || classNameStr == "PopupHost")
                         return true; // skip special explorer windows
                     GetWindowThreadProcessId(hWnd, out uint pid);
                     if (pid == currentProcessId)
