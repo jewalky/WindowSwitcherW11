@@ -207,7 +207,9 @@ namespace WindowSwitchW11
                             imageToUse = new Bitmap(ICON_SIZE, ICON_SIZE);
                             using (Graphics g = Graphics.FromImage(imageToUse))
                             {
-                                g.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.NearestNeighbor;
+                                g.InterpolationMode = (original.Width < ICON_SIZE || original.Height < ICON_SIZE) ?
+                                    System.Drawing.Drawing2D.InterpolationMode.NearestNeighbor :
+                                    System.Drawing.Drawing2D.InterpolationMode.HighQualityBicubic;
                                 g.DrawImage(original, 0, 0, ICON_SIZE, ICON_SIZE);
                             }
                         }
