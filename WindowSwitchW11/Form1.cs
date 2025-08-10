@@ -188,7 +188,7 @@ namespace WindowSwitchW11
             if (lastWindowInfo.Count == 0)
                 return false;
             int iconSize = 32;
-            int maxIconsOnRow = 8;
+            int maxIconsOnRow = 7;
             int padding = 6;
             int itemSize = iconSize + padding * 2;
             int y = 0;
