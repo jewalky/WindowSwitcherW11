@@ -1,10 +1,15 @@
 using System.Collections.Generic;
+using System.Drawing;
 using System.Runtime.InteropServices;
 
 namespace WindowSwitchW11
 {
     public partial class Form1 : Form
     {
+        const int MAX_ROWS = 3;
+        const int MAX_COLUMNS = 7;
+        const int ICON_SIZE = 32;
+
         [DllImport("user32.dll", SetLastError = true)]
         [return: MarshalAs(UnmanagedType.Bool)]
         private static extern bool SetWindowPos(IntPtr hWnd, IntPtr hWndInsertAfter, int X, int Y, int cx, int cy, uint uFlags);
@@ -47,7 +52,8 @@ namespace WindowSwitchW11
         KeyboardHook hook;
         private List<WindowLabel> windowsOnForm = new List<WindowLabel>();
         private List<WindowInfo> lastWindowInfo;
-        private List<Image> images = new List<Image>();
+        private List<Image?> images = new List<Image?>();
+        private int scroll = 0;
 
         public Form1()
         {
@@ -103,16 +109,16 @@ namespace WindowSwitchW11
                         windowsOnForm[i].Selected = false;
                         if (args.ShiftPressed)
                         {
-                            int next = i - 1;
+                            int next = scroll + i - 1;
                             if (next < 0)
-                                next = windowsOnForm.Count - 1;
-                            windowsOnForm[next].Selected = true;
+                                next = lastWindowInfo.Count - 1;
+                            MakeVisibleAndSelect(next);
                             label1.Text = lastWindowInfo[next].Title;
                         }
                         else
                         {
-                            int next = (i + 1) % windowsOnForm.Count;
-                            windowsOnForm[next].Selected = true;
+                            int next = (scroll + i + 1) % lastWindowInfo.Count;
+                            MakeVisibleAndSelect(next);
                             label1.Text = lastWindowInfo[next].Title;
                         }
                         anySelected = true;
@@ -187,19 +193,79 @@ namespace WindowSwitchW11
             windowsOnForm.Clear();
             if (lastWindowInfo.Count == 0)
                 return false;
-            int iconSize = 32;
-            int maxIconsOnRow = 7;
+            foreach (var window in lastWindowInfo)
+            {
+                Image? image = null;
+                // Scale the icon if smaller
+                if (window.Icon != null)
+                {
+                    using (Bitmap original = window.Icon.ToBitmap())
+                    {
+                        Bitmap imageToUse;
+                        if (original.Width != ICON_SIZE || original.Height != ICON_SIZE)
+                        {
+                            imageToUse = new Bitmap(ICON_SIZE, ICON_SIZE);
+                            using (Graphics g = Graphics.FromImage(imageToUse))
+                            {
+                                g.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.NearestNeighbor;
+                                g.DrawImage(original, 0, 0, ICON_SIZE, ICON_SIZE);
+                            }
+                        }
+                        else
+                        {
+                            imageToUse = (Bitmap)original.Clone();  // Clone to avoid disposing the original prematurely
+                        }
+                        image = imageToUse;
+                    }
+                }
+                images.Add(image);
+            }
+            scroll = 0;
+            int initialSelectedWindow = lastWindowInfo.Count > 1 ? 1 : 0;
+            SetupWindowSubList(initialSelectedWindow);
+            return true;
+        }
+
+        private void MakeVisibleAndSelect(int next)
+        {
+            // which row is scroll?
+            int currentRow = scroll / MAX_COLUMNS;
+            // which row "next" is in?
+            int nextRow = next / MAX_COLUMNS;
+            if (nextRow < currentRow)
+            {
+                scroll = nextRow * MAX_COLUMNS;
+            }
+            else if (nextRow >= currentRow + MAX_ROWS)
+            {
+                scroll = (nextRow - 1) * MAX_COLUMNS;
+            }
+            else
+            {
+                windowsOnForm[next - scroll].Selected = true;
+                return;
+            }
+            SetupWindowSubList(next);
+        }
+
+        private void SetupWindowSubList(int initialSelectedWindow)
+        {
+            foreach (var control in windowsOnForm)
+                control.Dispose();
+            windowsOnForm.Clear();
             int padding = 6;
-            int itemSize = iconSize + padding * 2;
+            int itemSize = ICON_SIZE + padding * 2;
             int y = 0;
             int x = 0;
-            int remainderIcons = lastWindowInfo.Count % maxIconsOnRow;
-            int lastLineStart = lastWindowInfo.Count - remainderIcons;
-            int maxRows = lastWindowInfo.Count / maxIconsOnRow;
+            int displayCount = lastWindowInfo.Count - scroll;
+            int remainderIcons = (displayCount) % MAX_COLUMNS;
+            int lastLineStart = scroll + (displayCount - remainderIcons);
+            int maxRows = displayCount / MAX_COLUMNS;
             if (remainderIcons != 0)
                 maxRows++;
-            int initialSelectedWindow = lastWindowInfo.Count > 1 ? 1 : 0;
-            for (int i = 0; i < lastWindowInfo.Count; i++)
+            if (maxRows > MAX_ROWS)
+                maxRows = MAX_ROWS;
+            for (int i = scroll; i < lastWindowInfo.Count; i++)
             {
                 WindowInfo window = lastWindowInfo[i];
                 if (window.Handle == Handle)
@@ -207,53 +273,30 @@ namespace WindowSwitchW11
                 int lineOffset = 0;
                 if (i >= lastLineStart)
                 {
-                    lineOffset = (maxIconsOnRow * itemSize) / 2 - (remainderIcons * itemSize) / 2;
+                    lineOffset = (MAX_COLUMNS * itemSize) / 2 - (remainderIcons * itemSize) / 2;
                 }
                 WindowLabel windowVisual = new WindowLabel();
                 Label icon = new Label();
-
-                // Scale the icon if smaller
-                if (window.Icon != null)
-                {
-                    using (Bitmap original = window.Icon.ToBitmap())
-                    {
-                        Bitmap imageToUse;
-                        if (original.Width != iconSize || original.Height != iconSize)
-                        {
-                            imageToUse = new Bitmap(iconSize, iconSize);
-                            using (Graphics g = Graphics.FromImage(imageToUse))
-                            {
-                                g.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.NearestNeighbor;
-                                g.DrawImage(original, 0, 0, iconSize, iconSize);
-                            }
-                        }
-                        else
-                        {
-                            imageToUse = (Bitmap)original.Clone();  // Clone to avoid disposing the original prematurely
-                        }
-                        icon.Image = imageToUse;
-                    }
-                }
-
+                icon.Image = images[i];
                 icon.Location = new Point(padding, padding);
-                icon.Size = new Size(iconSize, iconSize);
+                icon.Size = new Size(ICON_SIZE, ICON_SIZE);
                 windowVisual.Location = new Point(lineOffset + x * itemSize, y * itemSize);
                 windowVisual.Size = new Size(itemSize, itemSize);
                 windowVisual.Selected = i == initialSelectedWindow;
                 windowVisual.Controls.Add(icon);
+                panel1.Controls.Add(windowVisual);
+                windowsOnForm.Add(windowVisual);
                 x += 1;
-                if (x >= maxIconsOnRow)
+                if (x >= MAX_COLUMNS)
                 {
                     x = 0;
                     y++;
+                    if (y >= maxRows)
+                        break;
                 }
-                panel1.Controls.Add(windowVisual);
-                windowsOnForm.Add(windowVisual);
-                if (icon.Image != null)
-                    images.Add(icon.Image);
             }
             // position and resize
-            Size = new Size(padding * 2 + maxIconsOnRow * itemSize + 12, padding * 2 + maxRows * itemSize + 54);
+            Size = new Size(padding * 2 + MAX_COLUMNS * itemSize + 12, padding * 2 + maxRows * itemSize + 54);
 
             Point mousePos = Cursor.Position;
             Screen cursorScreen = Screen.FromPoint(mousePos);
@@ -263,7 +306,6 @@ namespace WindowSwitchW11
             this.Location = new Point(centerX, centerY);
 
             label1.Text = lastWindowInfo[initialSelectedWindow].Title;
-            return true;
         }
     }
 }
