@@ -34,10 +34,21 @@ public static class WindowEnumerator
     [DllImport("user32.dll", CharSet = CharSet.Auto)]
     private static extern int GetClassName(IntPtr hWnd, StringBuilder lpClassName, int nMaxCount);
 
+    [DllImport("user32.dll")]
+    private static extern IntPtr GetWindow(IntPtr hWnd, uint uCmd);
+
+    [DllImport("user32.dll")]
+    private static extern long GetWindowLong(IntPtr hWnd, int nIndex);
+
     private const uint WM_GETICON = 0x007F;
     private const int ICON_SMALL = 0;
     private const int ICON_BIG = 1;
     private const int DWMWA_CLOAKED = 14;
+
+    private const uint GW_OWNER = 4;
+    private const int GWL_EXSTYLE = -20;
+    private const long WS_EX_APPWINDOW = 0x00040000L;
+    private const long WS_EX_TOOLWINDOW = 0x00000080L;
 
     public static List<WindowInfo> GetOpenWindows()
     {
@@ -54,6 +65,11 @@ public static class WindowEnumerator
                     DwmGetWindowAttribute(hWnd, DWMWA_CLOAKED, out cloaked, sizeof(int));
                     if (cloaked != 0)
                         return true; // Skip cloaked windows
+                    long exStyle = GetWindowLong(hWnd, GWL_EXSTYLE);
+                    if ((exStyle & WS_EX_TOOLWINDOW) != 0)
+                        return true; // Skip tool windows
+                    if ((exStyle & WS_EX_APPWINDOW) == 0 && GetWindow(hWnd, GW_OWNER) != IntPtr.Zero)
+                        return true; // Skip owned non-app windows
                     StringBuilder className = new StringBuilder(256);
                     GetClassName(hWnd, className, className.Capacity);
                     string classNameStr = className.ToString();
