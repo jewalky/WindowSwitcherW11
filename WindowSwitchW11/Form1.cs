@@ -166,7 +166,7 @@ namespace WindowSwitchW11
             {
                 if (windowsOnForm[i].Selected)
                 {
-                    IntPtr hWnd = lastWindowInfo[i].Handle;
+                    IntPtr hWnd = lastWindowInfo[scroll+i].Handle;
                     ForceForegroundWindow(hWnd);
                 }
             }
