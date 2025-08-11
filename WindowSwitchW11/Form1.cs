@@ -134,22 +134,30 @@ namespace WindowSwitchW11
 
         private void ForceForegroundWindow(IntPtr hWnd)
         {
-            uint foreThread = GetWindowThreadProcessId(GetForegroundWindow(), IntPtr.Zero);
-            uint appThread = GetCurrentThreadId();
+            try
+            {
+                uint foreThread = GetWindowThreadProcessId(GetForegroundWindow(), IntPtr.Zero);
+                uint appThread = GetCurrentThreadId();
 
-            if (foreThread != appThread)
-            {
-                AttachThreadInput(foreThread, appThread, true);
-                BringWindowToTop(hWnd);
-                SetForegroundWindow(hWnd);
-                ShowWindow(hWnd, IsIconic(hWnd) ? SW_RESTORE : SW_SHOW);
-                AttachThreadInput(foreThread, appThread, false);
+                if (foreThread != appThread)
+                {
+                    AttachThreadInput(foreThread, appThread, true);
+                    BringWindowToTop(hWnd);
+                    SetForegroundWindow(hWnd);
+                    ShowWindow(hWnd, IsIconic(hWnd) ? SW_RESTORE : SW_SHOW);
+                    AttachThreadInput(foreThread, appThread, false);
+                }
+                else
+                {
+                    BringWindowToTop(hWnd);
+                    SetForegroundWindow(hWnd);
+                    ShowWindow(hWnd, IsIconic(hWnd) ? SW_RESTORE : SW_SHOW);
+                }
             }
-            else
+            catch (Exception)
             {
-                BringWindowToTop(hWnd);
-                SetForegroundWindow(hWnd);
-                ShowWindow(hWnd, IsIconic(hWnd) ? SW_RESTORE : SW_SHOW);
+                // generally nothing should crash inside this (as they are direct C calls)
+                // but well, just for safety.
             }
         }
 
@@ -199,25 +207,32 @@ namespace WindowSwitchW11
                 // Scale the icon if smaller
                 if (window.Icon != null)
                 {
-                    using (Bitmap original = window.Icon.ToBitmap())
+                    try
                     {
-                        Bitmap imageToUse;
-                        if (original.Width != ICON_SIZE || original.Height != ICON_SIZE)
+                        using (Bitmap original = window.Icon.ToBitmap())
                         {
-                            imageToUse = new Bitmap(ICON_SIZE, ICON_SIZE);
-                            using (Graphics g = Graphics.FromImage(imageToUse))
+                            Bitmap imageToUse;
+                            if (original.Width != ICON_SIZE || original.Height != ICON_SIZE)
                             {
-                                g.InterpolationMode = (original.Width < ICON_SIZE || original.Height < ICON_SIZE) ?
-                                    System.Drawing.Drawing2D.InterpolationMode.NearestNeighbor :
-                                    System.Drawing.Drawing2D.InterpolationMode.HighQualityBicubic;
-                                g.DrawImage(original, 0, 0, ICON_SIZE, ICON_SIZE);
+                                imageToUse = new Bitmap(ICON_SIZE, ICON_SIZE);
+                                using (Graphics g = Graphics.FromImage(imageToUse))
+                                {
+                                    g.InterpolationMode = (original.Width < ICON_SIZE || original.Height < ICON_SIZE) ?
+                                        System.Drawing.Drawing2D.InterpolationMode.NearestNeighbor :
+                                        System.Drawing.Drawing2D.InterpolationMode.HighQualityBicubic;
+                                    g.DrawImage(original, 0, 0, ICON_SIZE, ICON_SIZE);
+                                }
                             }
+                            else
+                            {
+                                imageToUse = (Bitmap)original.Clone();  // Clone to avoid disposing the original prematurely
+                            }
+                            image = imageToUse;
                         }
-                        else
-                        {
-                            imageToUse = (Bitmap)original.Clone();  // Clone to avoid disposing the original prematurely
-                        }
-                        image = imageToUse;
+                    }
+                    catch (Exception)
+                    {
+                        // this means that the icon copying failed. this is pretty bad, but we shouldn't crash the entire app because of it.
                     }
                 }
                 images.Add(image);
